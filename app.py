@@ -1,9 +1,10 @@
-from flask import Flask, request, render_template
+import os
 import sqlite3
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
-# Create database and table (runs once)
+# ---------- Database Initialization ----------
 def init_db():
     conn = sqlite3.connect("quiz.db")
     cursor = conn.cursor()
@@ -18,6 +19,7 @@ def init_db():
 
 init_db()
 
+# ---------- Routes ----------
 @app.route("/")
 def quiz():
     return render_template("quiz.html")
@@ -25,7 +27,16 @@ def quiz():
 @app.route("/submit", methods=["POST"])
 def submit():
     score = 0
+
     if request.form.get("q1") == "a":
+        score += 1
+    if request.form.get("q2") == "b":
+        score += 1
+    if request.form.get("q3") == "b":
+        score += 1
+    if request.form.get("q4") == "b":
+        score += 1
+    if request.form.get("q5") == "a":
         score += 1
 
     # Store score in database
@@ -35,7 +46,14 @@ def submit():
     conn.commit()
     conn.close()
 
-    return f"Quiz submitted! Your score is {score}/1 (Saved in database)"
+    return f"""
+        <h2>Quiz Submitted Successfully</h2>
+        <p>Your Score: <b>{score}/5</b></p>
+        <a href="/">Take Quiz Again</a>
+    """
 
+# ---------- Run App (Cloud Compatible) ----------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
